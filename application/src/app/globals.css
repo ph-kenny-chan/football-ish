@@ -8,6 +8,12 @@
   --background-end-rgb: 255, 255, 255;
 }
 
+.container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Adjust the number of columns as needed */
+  gap: 20px; /* Adjust the gap between grid items as needed */
+}
+
 @font-face {
   font-family: 'Nunito';
   src: url('/public/fonts/Nunito-Regular.ttf') format('ttf');
