@@ -1,6 +1,6 @@
 import { log } from 'console';
 import { Database } from '../config/Database';
-import { logger } from '../config/loggerConfig';
+import { logger } from '../middlewares/loggerConfig';
 import { Team } from '../types/TeamVenue';
 import knex from 'knex';
 
@@ -33,10 +33,7 @@ export const insertTeams = async (teams: Team[]): Promise<any> => {
       }) as TeamSchema
   );
   try {
-    const result = await (await Database.getClient())
-      .insert<Array<Team>>(teamsToInsert)
-      .into('team')
-      .returning('*');
+    const result = await (await Database.getClient()).insert<Array<Team>>(teamsToInsert).into('team').returning('*');
     logger.info(`Inserted ${result.length} teams`);
     return result;
   } catch (error) {
@@ -70,35 +67,40 @@ export const updateTeam = async (team: Team): Promise<any> => {
 export const upsertTeams = async (teams: Team[]): Promise<any> => {
   try {
     // Step 1: Prepare the data
-    const teamsToInsert = teams.map(team => ({
-      api_id: team.apiId,
-      name: team.name,
-      code: team.code,
-      country: team.country,
-      founded: team.founded,
-      national: team.national,
-      logo: team.logo,
-      created_at: new Date(),
-      updated_at: new Date()
-    }) as TeamSchema);
+    const teamsToInsert = teams.map(
+      team =>
+        ({
+          api_id: team.apiId,
+          name: team.name,
+          code: team.code,
+          country: team.country,
+          founded: team.founded,
+          national: team.national,
+          logo: team.logo,
+          created_at: new Date(),
+          updated_at: new Date()
+        }) as TeamSchema
+    );
 
     logger.info(`Upserting ${teamsToInsert.length} teams`);
 
-    const result = await (await Database.getClient())
-    .table('team')
-    .insert(teamsToInsert)
-    .onConflict('api_id')
-    .merge((record:TeamSchema, idx: number) => {
-      record.code = teamsToInsert[idx].code;
-      record.country = teamsToInsert[idx].country;
-      record.founded = teamsToInsert[idx].founded;
-      record.logo = teamsToInsert[idx].logo;
-      record.name = teamsToInsert[idx].name;
-      record.national = teamsToInsert[idx].national;
-      record.updated_at = new Date();
-    })
-    .returning('*');
-    
+    const result = await (
+      await Database.getClient()
+    )
+      .table('team')
+      .insert(teamsToInsert)
+      .onConflict('api_id')
+      .merge((record: TeamSchema, idx: number) => {
+        record.code = teamsToInsert[idx].code;
+        record.country = teamsToInsert[idx].country;
+        record.founded = teamsToInsert[idx].founded;
+        record.logo = teamsToInsert[idx].logo;
+        record.name = teamsToInsert[idx].name;
+        record.national = teamsToInsert[idx].national;
+        record.updated_at = new Date();
+      })
+      .returning('*');
+
     logger.info(`Upserted ${result.length} teams`);
     return result;
   } catch (error) {

@@ -1,5 +1,5 @@
 import { Database } from '../config/Database';
-import { logger } from '../config/loggerConfig';
+import { logger } from '../middlewares/loggerConfig';
 
 type YearNumSchema = {
   id?: number;

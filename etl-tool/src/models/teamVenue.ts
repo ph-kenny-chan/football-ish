@@ -1,5 +1,5 @@
 import { Database } from '../config/Database';
-import { logger } from '../config/loggerConfig';
+import { logger } from '../middlewares/loggerConfig';
 import { TeamVenue } from '../types/TeamVenue';
 
 type TeamVenueSchema = {
@@ -27,10 +27,12 @@ export const upsertTeamVenues = async (teamVenues: TeamVenue[]): Promise<any> =>
   });
 
   try {
-    const result = await(await Database.getClient())
+    const result = await (
+      await Database.getClient()
+    )
       .table('team_venue')
       .insert(teamVenuesToInsert)
-      .onConflict(['team_id', 'venue_id','year_num'])
+      .onConflict(['team_id', 'venue_id', 'year_num'])
       .merge((record: TeamVenueSchema, idx: number) => {
         record.updated_at = new Date();
       })
@@ -62,7 +64,7 @@ export const findTeamVenueByTeamIdAndVenueId = async (teamId: number, venueId: n
       .where('venue_id', venueId)
       .first();
     if (result?.id === undefined) {
-      logger.info(`TeamVenue not found for teamId: ${teamId} and venueId: ${venueId}`)
+      logger.info(`TeamVenue not found for teamId: ${teamId} and venueId: ${venueId}`);
       return undefined as unknown as TeamVenue;
     }
     return {

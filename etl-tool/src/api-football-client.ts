@@ -1,5 +1,5 @@
 import { API_FOOTBALL_ENDPOINTS, API_FOOTBALL_KEY } from './config/env';
-import { logger } from './config/loggerConfig';
+import { logger } from './middlewares/loggerConfig';
 import { ApiResponse } from './types/apiObj/ApiResponse';
 import { Country } from './types/Country';
 import { get } from 'lodash';

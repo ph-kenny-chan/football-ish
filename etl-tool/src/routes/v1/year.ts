@@ -1,10 +1,10 @@
 import express, { Request, Response } from 'express';
-import { syncYearNumbersFromAPI } from '../../services/yearNum';
+import { fetchYearNumbers } from '../../services/yearNumberService';
 
 const router = express.Router();
 
 router.post('/sync', async (req: Request, res: Response) => {
-  const result = await syncYearNumbersFromAPI();
+  const result = await fetchYearNumbers();
   res.status(result.code).send({ result: result.message });
 });
 

@@ -1,4 +1,4 @@
-import { logger } from './loggerConfig';
+import { logger } from '../middlewares/loggerConfig';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -23,6 +23,6 @@ const API_FOOTBALL_ENDPOINTS = {
 
 const API_FOOTBALL_KEY = process.env.API_FOOTBALL_KEY ?? '';
 
-const preloadCountries = 'ENG,ITA'
+const preloadCountries = 'ENG,ITA';
 
 export { port, db_host, db_port, db_database, db_user, db_password, db_ssl_ca, API_FOOTBALL_ENDPOINTS, API_FOOTBALL_KEY };

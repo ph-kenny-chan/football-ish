@@ -1,9 +1,9 @@
 import knex from 'knex';
 import { Country } from '../types/Country';
 import { Database } from '../config/Database';
-import { logger } from '../config/loggerConfig';
+import { logger } from '../middlewares/loggerConfig';
 
-type CountrySchema = {
+export type CountrySchema = {
   id?: number;
   api_id: number;
   code: string;

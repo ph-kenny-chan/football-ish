@@ -1,17 +1,17 @@
 import { getTeamsByLeagueId } from '../api-football-client';
-import { logger } from '../config/loggerConfig';
+import { logger } from '../middlewares/loggerConfig';
 import { findTeamVenueByTeamIdAndVenueId, upsertTeamVenues } from '../models/teamVenue';
 import { Team, TeamVenue, Venue } from '../types/TeamVenue';
 import { ApiResponse } from '../types/apiObj/ApiResponse';
 import { ResTeamVenue } from '../types/apiObj/ResTeamVenue';
-import { findTeamByApiId, insertTeams, updateTeam, upsertTeams } from '../models/team';
-import { findVenueByApiId, insertVenues, updateVenue, upsertVenues } from '../models/venue';
+import { findTeamByApiId, upsertTeams } from '../models/team';
+import { findVenueByApiId, upsertVenues } from '../models/venue';
 
 export const venues: Venue[] = [];
 export const teams: Team[] = [];
-export const teamVenuesMap: { teamApiId: number | undefined, venueApiId: number | undefined, season: number }[] = [];
+export const teamVenuesMap: { teamApiId: number | undefined; venueApiId: number | undefined; season: number }[] = [];
 
-export const syncTeamVenuesFromAPI = async (leagueIds: number[], season: number) => {
+export const fetchTeamVenues = async (leagueIds: number[], season: number) => {
   try {
     const filtered = leagueIds.slice(0, 3);
     for (const leagueId of filtered) {
@@ -43,34 +43,7 @@ export const syncTeamVenuesFromAPI = async (leagueIds: number[], season: number)
   }
 };
 
-export const syncTeamsToDB = async () => {
-  return await upsertTeams(teams);
-    // const team = await findTeamByApiId(teamFromAPI.apiId ?? 0);
-    // if (!team) {
-    //   logger.info(`Inserting team: ${teamFromAPI.name}`);
-    //   await insertTeams([teamFromAPI]);
-    // } else if (isUpdatedTeamData(team, teamFromAPI)) {
-    //   logger.info(`Updating team: ${teamFromAPI.name}`);
-    //   await updateTeam(teamFromAPI);
-    // }
-}
-
-export const syncVenuesToDB = async () => {
-  return await upsertVenues(venues);
-  // const venuesFromAPI = venues;
-  // for (const venueFromAPI of venuesFromAPI) {
-  //   const venue = await findVenueByApiId(venueFromAPI.apiId ?? 0);
-  //   if (!venue) {
-  //     logger.info(`Inserting venue: ${venueFromAPI.name}`);
-  //     await insertVenues([venueFromAPI]);
-  //   } else if (isUpdatedVenueData(venue, venueFromAPI)) {
-  //     logger.info(`Updating venue: ${venueFromAPI.name}`);
-  //     await updateVenue(venueFromAPI);
-  //   }
-  // }
-};
-
-export const syncTeamVenuesToDB = async () => {
+export const addNewTeamVenuesToDB = async () => {
   const teamVenuesFromAPI = teamVenuesMap;
   const teamVenuesToInsert = [];
   for (const teamVenue of teamVenuesFromAPI) {
@@ -84,17 +57,6 @@ export const syncTeamVenuesToDB = async () => {
     }
   }
   return await upsertTeamVenues(teamVenuesToInsert);
-};
-
-const isUpdatedTeamData = (team: Team, teamFromAPI: Team) => {
-  return (
-    team.name !== teamFromAPI.name ||
-    team.code !== teamFromAPI.code ||
-    team.country !== teamFromAPI.country ||
-    team.founded !== teamFromAPI.founded ||
-    team.national !== teamFromAPI.national ||
-    team.logo !== teamFromAPI.logo
-  );
 };
 
 const isUpdatedVenueData = (venue: Venue, venueFromAPI: Venue) => {

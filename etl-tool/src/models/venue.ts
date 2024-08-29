@@ -1,6 +1,6 @@
 import knex from 'knex';
 import { Database } from '../config/Database';
-import { logger } from '../config/loggerConfig';
+import { logger } from '../middlewares/loggerConfig';
 import { Venue } from '../types/TeamVenue';
 
 type VenueSchema = {
@@ -32,10 +32,7 @@ export const insertVenues = async (venues: Venue[]): Promise<any> => {
       }) as VenueSchema
   );
   try {
-    const result = await(await Database.getClient())
-      .insert<Array<Venue>>(venuesToInsert)
-      .into('venue')
-      .returning('*');
+    const result = await (await Database.getClient()).insert<Array<Venue>>(venuesToInsert).into('venue').returning('*');
     logger.info(`Inserted ${result.length} venues`);
     logger.info(result);
     return result;
@@ -68,22 +65,27 @@ export const updateVenue = async (venue: Venue): Promise<any> => {
 };
 export const upsertVenues = async (venues: Venue[]): Promise<any> => {
   try {
-    const venuesToInsert = venues.map(venue => ({
-      api_id: venue.apiId,
-      name: venue.name,
-      address: venue.address,
-      city: venue.city,
-      capacity: venue.capacity,
-      surface: venue.surface,
-      image: venue.image,
-      created_at: new Date(),
-      updated_at: new Date()
-    }) as VenueSchema);
+    const venuesToInsert = venues.map(
+      venue =>
+        ({
+          api_id: venue.apiId,
+          name: venue.name,
+          address: venue.address,
+          city: venue.city,
+          capacity: venue.capacity,
+          surface: venue.surface,
+          image: venue.image,
+          created_at: new Date(),
+          updated_at: new Date()
+        }) as VenueSchema
+    );
 
     logger.info(`Upserting ${venuesToInsert.length} venues`);
 
-    const result = await(await Database.getClient())
-      .table('venue')  
+    const result = await (
+      await Database.getClient()
+    )
+      .table('venue')
       .insert(venuesToInsert)
       .onConflict('api_id')
       .merge((record: VenueSchema, idx: number) => {
@@ -136,7 +138,7 @@ export const findVenueByApiId = async (apiId: number): Promise<Venue> => {
       .from('venue')
       .where('api_id', apiId)
       .first();
-    
+
     if (result?.api_id === undefined) {
       logger.info(`venue api id ${apiId} is not existed`);
       return undefined as unknown as Venue;

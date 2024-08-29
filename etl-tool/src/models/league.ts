@@ -1,5 +1,5 @@
 import knex from 'knex';
-import { logger } from '../config/loggerConfig';
+import { logger } from '../middlewares/loggerConfig';
 import { League } from '../types/League';
 import { Database } from '../config/Database';
 
@@ -78,7 +78,9 @@ export const findAllLeagues = async (): Promise<League[]> => {
 
 export const findLeaguesByCountryId = async (countryId: number, limit: number | null = null): Promise<League[]> => {
   try {
-    const result = await (await Database.getClient())
+    const result = await (
+      await Database.getClient()
+    )
       .select<Array<LeagueSchema>>('*')
       .from('league')
       .where('country_id', countryId)

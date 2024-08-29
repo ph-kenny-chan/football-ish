@@ -1,32 +1,12 @@
-import { log } from 'console';
 import { getLeagues } from '../api-football-client';
-import { logger } from '../config/loggerConfig';
-import { findCountries, findCountryByCountryCodeAndName } from '../models/country';
-import { LeagueSchema, findAllLeagues, insertLeagues, updateLeague } from '../models/league';
-import { findYearNumbers } from '../models/yearNum';
+import { logger } from '../middlewares/loggerConfig';
+import { findAllLeagues, insertLeagues, updateLeague } from '../models/league';
 import { ApiResponse } from '../types/apiObj/ApiResponse';
-import { Country } from '../types/Country';
 import { League } from '../types/League';
 import { ResLeague } from '../types/apiObj/ResLeague';
+import { allCountries } from './countryService';
 
-export let allCountries = new Array<Country>();
-export let allYearNums = new Array<number>();
-export let currentYearNum: number;
-
-export const getAllCountries = async () => {
-  allCountries = await findCountries();
-  logger.info(`Countries loaded: ${allCountries.length} countries`);
-};
-
-export const getAllYearNums = async () => {
-  allYearNums = await findYearNumbers();
-  const currentYear = new Date().getFullYear();
-  currentYearNum = allYearNums.includes(currentYear) ? currentYear : allYearNums[allYearNums.length - 1];
-  logger.info(`Year numbers loaded: ${allYearNums.length} year numbers`);
-  logger.info(`Current year number: ${currentYearNum}`);
-};
-
-export const syncLeaguesFromAPI = async () => {
+export const fetchLeagues = async () => {
   try {
     const apiResLeagues: ApiResponse<ResLeague> = await getLeagues();
     const leaguesFromDB = await findAllLeagues();
@@ -47,7 +27,7 @@ export const syncLeaguesFromAPI = async () => {
           logo: resLeague.league.logo
         } as League);
         logger.info(`new league added: ${country?.name} - ${country?.code} - resLeague: ${resLeague.league.name}`);
-      } else if (leagueFromDB && shouldUpdateLeague(resLeague, leagueFromDB)) {
+      } else if (leagueFromDB && isUpdatedTeamData(resLeague, leagueFromDB)) {
         await updateLeague({
           ...leagueFromDB,
           name: resLeague.league.name,
@@ -67,7 +47,7 @@ export const syncLeaguesFromAPI = async () => {
   }
 };
 
-export const shouldUpdateLeague = (leagueFromAPI: ResLeague, leagueFromDB: League): boolean => {
+export const isUpdatedTeamData = (leagueFromAPI: ResLeague, leagueFromDB: League): boolean => {
   return (
     leagueFromAPI.league.name !== leagueFromDB.name ||
     leagueFromAPI.league.type !== leagueFromDB.type ||
