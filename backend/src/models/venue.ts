@@ -33,8 +33,6 @@ export const insertVenues = async (venues: Venue[]): Promise<any> => {
   );
   try {
     const result = await (await Database.getClient()).insert<Array<Venue>>(venuesToInsert).into('venue').returning('*');
-    logger.info(`Inserted ${result.length} venues`);
-    logger.info(result);
     return result;
   } catch (error) {
     logger.error(error);

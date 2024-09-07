@@ -54,7 +54,6 @@ export const fetchTeamStatistics = async (leagueId: number, teamId: number, seas
 const convertCardsResponseToTeamCards = (cards: ResCards, statTeamId: number, season: number) => {
   const { yellow, red } = cards;
   for (const minute of minuteRangeValues) {
-    logger.info(minute);
     const yellowCard = yellow[minute as MinuteRange];
     const redCard = red[minute as MinuteRange];
     const teamCard = {

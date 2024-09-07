@@ -22,9 +22,6 @@ export const upsertTeamVenues = async (teamVenues: TeamVenue[]): Promise<any> =>
         updated_at: new Date()
       }) as TeamVenueSchema
   );
-  teamVenuesToInsert.forEach(teamVenue => {
-    logger.info(`Upserting teamVenue: ${teamVenue.team_id}, ${teamVenue.venue_id}, ${teamVenue.year_num}`);
-  });
 
   try {
     const result = await (
@@ -36,7 +33,6 @@ export const upsertTeamVenues = async (teamVenues: TeamVenue[]): Promise<any> =>
       .ignore()
       .returning('*');
 
-    logger.info(`Upserted ${result.length} teamVenues`);
     return result;
   } catch (error) {
     logger.error(error);

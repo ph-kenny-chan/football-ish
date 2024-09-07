@@ -4,14 +4,6 @@ import { teams } from "./teamVenueService";
 
 export const updateTeamsInDB = async () => {
   return await upsertTeams(teams);
-  // const team = await findTeamByApiId(teamFromAPI.apiId ?? 0);
-  // if (!team) {
-  //   logger.info(`Inserting team: ${teamFromAPI.name}`);
-  //   await insertTeams([teamFromAPI]);
-  // } else if (isUpdatedTeamData(team, teamFromAPI)) {
-  //   logger.info(`Updating team: ${teamFromAPI.name}`);
-  //   await updateTeam(teamFromAPI);
-  // }
 };
 
 const isUpdatedTeamData = (team: Team, teamFromAPI: Team) => {
