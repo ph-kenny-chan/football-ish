@@ -5,6 +5,7 @@ import { HomeAway, TeamFixture } from '../types/TeamStatistic';
 export type TeamFixtureSchema = {
   id: number;
   team_id: number;
+  league_id: number;
   year_num: number;
   home_away: HomeAway;
   played: number;
@@ -18,6 +19,7 @@ export type TeamFixtureSchema = {
 export const upsertTeamFixture = async (teamFixture: TeamFixture): Promise<void> => {
   const teamFixtureToInsert = {
     team_id: teamFixture.teamId,
+    league_id: teamFixture.leagueId,
     year_num: teamFixture.yearNum,
     home_away: teamFixture.homeAway,
     played: teamFixture.played,
@@ -31,7 +33,7 @@ export const upsertTeamFixture = async (teamFixture: TeamFixture): Promise<void>
     await(await Database.getClient())
       .table('team_fixture')
       .insert(teamFixtureToInsert)
-      .onConflict(['team_id', 'year_num', 'home_away'])
+      .onConflict(['team_id', 'league_id', 'year_num', 'home_away'])
       .merge({
         played: teamFixture.played,
         wins: teamFixture.wins,

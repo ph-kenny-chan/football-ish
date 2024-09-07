@@ -37,27 +37,28 @@ export const fetchTeamStatistics = async (leagueId: number, teamId: number, seas
     
     if (!statTeamId || !statLeagueId) throw new Error('Team ID or League ID is null');
     // Team Cards
-    await convertCardsResponseToTeamCards(cards, statTeamId, season);
+    await convertCardsResponseToTeamCards(cards, statTeamId, statLeagueId, season);
     // Team Fixtures
-    await convertFixturesResponseToTeamFixtures(fixtures, statTeamId, season);
+    await convertFixturesResponseToTeamFixtures(fixtures, statTeamId, statLeagueId, season);
     // Team goals
-    await convertGoalsResponseToTeamGoals(goals, statTeamId, season);
+    await convertGoalsResponseToTeamGoals(goals, statTeamId, statLeagueId, season);
     // Team Formations
-    await convertFormationsResponseToTeamFormations(lineups, statTeamId, season);
+    await convertFormationsResponseToTeamFormations(lineups, statTeamId, statLeagueId, season);
     // Team Record
-    await convertResponseToTeamRecords(form, biggest, cleanSheet, failedToScore, penalty, statTeamId, season);
+    await convertResponseToTeamRecords(form, biggest, cleanSheet, failedToScore, penalty, statTeamId, statLeagueId, season);
   } catch (error) {
     throw new Error('Failed to fetch team statistics');
   }
 };
 
-const convertCardsResponseToTeamCards = (cards: ResCards, statTeamId: number, season: number) => {
+const convertCardsResponseToTeamCards = (cards: ResCards, statTeamId: number, statLeagueId: number, season: number) => {
   const { yellow, red } = cards;
   for (const minute of minuteRangeValues) {
     const yellowCard = yellow[minute as MinuteRange];
     const redCard = red[minute as MinuteRange];
     const teamCard = {
       teamId: statTeamId,
+      leagueId: statLeagueId,
       yearNum: season,
       minute: minute,
       yellowTotal: yellowCard.total,
@@ -70,9 +71,10 @@ const convertCardsResponseToTeamCards = (cards: ResCards, statTeamId: number, se
   }
 };
 
-const convertFixturesResponseToTeamFixtures = (fixtures: ResFixtures, statTeamId: number, season: number) => {
+const convertFixturesResponseToTeamFixtures = (fixtures: ResFixtures, statTeamId: number, statLeagueId: number, season: number) => {
   const homeTeamFixture: TeamFixture = {
     teamId: statTeamId,
+    leagueId: statLeagueId,
     yearNum: season,
     homeAway: 'home',
     played: fixtures.played.home,
@@ -83,6 +85,7 @@ const convertFixturesResponseToTeamFixtures = (fixtures: ResFixtures, statTeamId
 
   const awayTeamFixture: TeamFixture = {
     teamId: statTeamId,
+    leagueId: statLeagueId,
     yearNum: season,
     homeAway: 'away',
     played: fixtures.played.away,
@@ -93,6 +96,7 @@ const convertFixturesResponseToTeamFixtures = (fixtures: ResFixtures, statTeamId
 
   const totalTeamFixture: TeamFixture = {
     teamId: statTeamId,
+    leagueId: statLeagueId,
     yearNum: season,
     homeAway: 'total',
     played: fixtures.played.total,
@@ -104,13 +108,14 @@ const convertFixturesResponseToTeamFixtures = (fixtures: ResFixtures, statTeamId
   return Promise.all([upsertTeamFixture(homeTeamFixture), upsertTeamFixture(awayTeamFixture), upsertTeamFixture(totalTeamFixture)]);
 };
 
-const convertGoalsResponseToTeamGoals = (goals: ResGoals, statTeamId: number, season: number) => {
+const convertGoalsResponseToTeamGoals = (goals: ResGoals, statTeamId: number, statLeagueId: number, season: number) => {
   forAgainstValues.forEach(forAgainst => {
     const goalsInner = goals[forAgainst];
 
     homeAwayValues.forEach(homeAway => {
       const goalRecord = {
         teamId: statTeamId,
+        leagueId: statLeagueId,
         yearNum: season,
         homeAway,
         forAgainst,
@@ -123,6 +128,7 @@ const convertGoalsResponseToTeamGoals = (goals: ResGoals, statTeamId: number, se
     minuteRangeValues.forEach(minute => {
       const goalMinuteRecord = {
         teamId: statTeamId,
+        leagueId: statLeagueId,
         yearNum: season,
         forAgainst,
         minute,
@@ -134,10 +140,11 @@ const convertGoalsResponseToTeamGoals = (goals: ResGoals, statTeamId: number, se
   });
 };
 
-const convertFormationsResponseToTeamFormations = (formations: ResLineup[], statTeamId: number, season: number) => {
+const convertFormationsResponseToTeamFormations = (formations: ResLineup[], statTeamId: number, statLeagueId: number, season: number) => {
   formations.forEach(formation => {
     const formationRecord = {
       teamId: statTeamId,
+      leagueId: statLeagueId,
       yearNum: season,
       formation: formation.formation,
       played: formation.played
@@ -153,10 +160,12 @@ const convertResponseToTeamRecords = (
   failedToScore: Record<HomeAway, number>,
   penalty: ResPenalties,
   statTeamId: number,
+  statLeagueId: number,
   season: number
 ) => {
   const teamRecord = {
     teamId: statTeamId,
+    leagueId: statLeagueId,
     yearNum: season,
     form,
     streakWins: biggest.streak.wins,

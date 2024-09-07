@@ -5,11 +5,12 @@ import { ForAgainst, HomeAway, MinuteRange, TeamGoal, TeamGoalMinute } from '../
 export type TeamGoalMinuteSchema = {
   id: number;
   team_id: number;
+  league_id: number;
   year_num: number;
   for_against: ForAgainst;
   minute: MinuteRange;
-  total: number,
-  percentage: number,
+  total: number;
+  percentage: number;
   created_at: Date;
   updated_at: Date;
 };
@@ -17,6 +18,7 @@ export type TeamGoalMinuteSchema = {
 export const upsertTeamGoalMinute = async (teamGoalMinute: TeamGoalMinute): Promise<void> => {
   const teamGoalMinuteToInsert = {
     team_id: teamGoalMinute.teamId,
+    league_id: teamGoalMinute.leagueId,
     year_num: teamGoalMinute.yearNum,
     for_against: teamGoalMinute.forAgainst,
     minute: teamGoalMinute.minute,
@@ -29,7 +31,7 @@ export const upsertTeamGoalMinute = async (teamGoalMinute: TeamGoalMinute): Prom
     await(await Database.getClient())
       .table('team_goal_minute')
       .insert(teamGoalMinuteToInsert)
-      .onConflict(['team_id', 'year_num', 'for_against', 'minute'])
+      .onConflict(['team_id', 'league_id', 'year_num', 'for_against', 'minute'])
       .merge({
         total: teamGoalMinute.total,
         percentage: teamGoalMinute.percentage,

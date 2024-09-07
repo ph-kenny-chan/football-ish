@@ -5,6 +5,7 @@ import { ForAgainst, HomeAway, TeamGoal } from '../types/TeamStatistic';
 export type TeamGoalSchema = {
   id: number;
   team_id: number;
+  league_id: number;
   year_num: number;
   home_away: HomeAway;
   for_against: ForAgainst;
@@ -17,6 +18,7 @@ export type TeamGoalSchema = {
 export const upsertTeamGoal = async (teamGoal: TeamGoal): Promise<void> => {
   const teamGoalToInsert = {
     team_id: teamGoal.teamId,
+    league_id: teamGoal.leagueId,
     year_num: teamGoal.yearNum,
     home_away: teamGoal.homeAway,
     for_against: teamGoal.forAgainst,
@@ -26,10 +28,10 @@ export const upsertTeamGoal = async (teamGoal: TeamGoal): Promise<void> => {
     updated_at: new Date()
   } as TeamGoalSchema;
   try {
-    await (await Database.getClient())
+    await(await Database.getClient())
       .table('team_goal')
       .insert(teamGoalToInsert)
-      .onConflict(['team_id', 'year_num', 'home_away', 'for_against'])
+      .onConflict(['team_id', 'league_id', 'year_num', 'home_away', 'for_against'])
       .merge({
         total: teamGoal.total,
         average: teamGoal.average,

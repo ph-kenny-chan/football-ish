@@ -5,6 +5,7 @@ import { TeamCard } from '../types/TeamStatistic';
 export type TeamCardSchema = {
   id: number;
   team_id: number;
+  league_id: number;
   year_num: number;
   minute: string;
   yellow_total: number;
@@ -18,6 +19,7 @@ export type TeamCardSchema = {
 export const upsertTeamCard = async (teamCard: TeamCard): Promise<void> => {
   const teamCardToInsert = {
     team_id: teamCard.teamId,
+    league_id: teamCard.leagueId,
     year_num: teamCard.yearNum,
     minute: teamCard.minute,
     yellow_total: teamCard.yellowTotal,
@@ -29,7 +31,7 @@ export const upsertTeamCard = async (teamCard: TeamCard): Promise<void> => {
   };
 
   try {
-    await (await Database.getClient()).table('team_card').insert(teamCardToInsert).onConflict(['team_id', 'year_num', 'minute']).merge({
+    await (await Database.getClient()).table('team_card').insert(teamCardToInsert).onConflict(['team_id', 'league_id', 'year_num', 'minute']).merge({
       yellow_total: teamCard.yellowTotal,
       yellow_percentage: teamCard.yellowPercentage,
       red_total: teamCard.redTotal,

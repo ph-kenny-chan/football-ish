@@ -124,6 +124,7 @@ CREATE TABLE
   IF NOT EXISTS team_fixture (
     id serial PRIMARY KEY,
     team_id INT,
+    league_id INT,
     year_num INT,
     home_away VARCHAR(255),
     played INT,
@@ -133,13 +134,15 @@ CREATE TABLE
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     FOREIGN KEY (team_id) REFERENCES team (id),
-    UNIQUE (team_id, year_num, home_away)
+    FOREIGN KEY (league_id) REFERENCES league (id),
+    UNIQUE (team_id, league_id, year_num, home_away)
   );
 
 CREATE TABLE
   IF NOT EXISTS team_record (
     id serial PRIMARY KEY,
     team_id INT,
+    league_id INT,
     year_num INT,
     form VARCHAR(255),
     streak_wins INT,
@@ -167,13 +170,15 @@ CREATE TABLE
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     FOREIGN KEY (team_id) REFERENCES team (id),
-    UNIQUE (team_id, year_num)
+    FOREIGN KEY (league_id) REFERENCES league (id),
+    UNIQUE (team_id, league_id, year_num)
   );
 
 CREATE TABLE
   IF NOT EXISTS team_goal (
     id serial PRIMARY KEY,
     team_id INT,
+    league_id INT,
     year_num INT,
     for_against VARCHAR(255),
     home_away VARCHAR(255),
@@ -182,13 +187,15 @@ CREATE TABLE
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     FOREIGN KEY (team_id) REFERENCES team (id),
-    UNIQUE (team_id, year_num, for_against, home_away)
+    FOREIGN KEY (league_id) REFERENCES league (id),
+    UNIQUE (team_id, league_id, year_num, for_against, home_away)
   );
 
 CREATE TABLE
   IF NOT EXISTS team_goal_minute (
     id serial PRIMARY KEY,
     team_id INT,
+    league_id INT,
     year_num INT,
     for_against VARCHAR(255),
     minute VARCHAR(255),
@@ -197,26 +204,30 @@ CREATE TABLE
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     FOREIGN KEY (team_id) REFERENCES team (id),
-    UNIQUE (team_id, year_num, for_against, minute)
+    FOREIGN KEY (league_id) REFERENCES league (id),
+    UNIQUE (team_id, league_id, year_num, for_against, minute)
   );
 
 CREATE TABLE
   IF NOT EXISTS team_formation (
     id serial PRIMARY KEY,
     team_id INT,
+    league_id INT,
     year_num INT,
     formation VARCHAR(255),
     played INT,
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     FOREIGN KEY (team_id) REFERENCES team (id),
-    UNIQUE (team_id, year_num, formation)
+    FOREIGN KEY (league_id) REFERENCES league (id),
+    UNIQUE (team_id, league_id, year_num, formation)
   );
 
 CREATE TABLE
   IF NOT EXISTS team_card (
     id serial PRIMARY KEY,
     team_id INT,
+    league_id INT,
     year_num INT,
     minute VARCHAR(255),
     yellow_total INT,
@@ -226,5 +237,6 @@ CREATE TABLE
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     FOREIGN KEY (team_id) REFERENCES team (id),
-    UNIQUE (team_id, year_num, minute)
+    FOREIGN KEY (league_id) REFERENCES league (id),
+    UNIQUE (team_id, league_id, year_num, minute)
   );

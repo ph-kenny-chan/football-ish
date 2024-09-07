@@ -1,6 +1,7 @@
 export type TeamCard = {
   id?: number;
   teamId: number;
+  leagueId: number;
   yearNum: number;
   minute: MinuteRange;
   yellowTotal: number;
@@ -12,6 +13,7 @@ export type TeamCard = {
 export type TeamFixture = {
   id?: number;
   teamId: number;
+  leagueId: number;
   yearNum: number;
   homeAway: HomeAway;
   played: number;
@@ -23,6 +25,7 @@ export type TeamFixture = {
 export type TeamGoal = {
   id?: number;
   teamId: number;
+  leagueId: number;
   yearNum: number;
   homeAway: HomeAway;
   forAgainst: ForAgainst;
@@ -33,6 +36,7 @@ export type TeamGoal = {
 export type TeamGoalMinute = {
   id?: number;
   teamId: number;
+  leagueId: number;
   yearNum: number;
   forAgainst: ForAgainst;
   minute: MinuteRange;
@@ -43,6 +47,7 @@ export type TeamGoalMinute = {
 export type TeamFormation = {
   id?: number;
   teamId: number;
+  leagueId: number;
   yearNum: number;
   formation: string;
   played: number;
@@ -53,6 +58,7 @@ export type TeamFormation = {
 export type TeamRecord = {
   id?: number;
   teamId: number;
+  leagueId: number;
   yearNum: number;
   form: string;
   streakWins: number;
