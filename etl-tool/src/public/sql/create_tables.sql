@@ -1,8 +1,8 @@
 DROP TABLE IF EXISTS team_card;
 
-DROP TABLE IF EXISTS team_lineup;
+DROP TABLE IF EXISTS team_formation;
 
-DROP TABLE IF EXISTS team_penalty;
+DROP TABLE IF EXISTS team_record;
 
 DROP TABLE IF EXISTS team_goal_minute;
 
@@ -41,7 +41,8 @@ CREATE TABLE
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     PRIMARY KEY (id),
-    UNIQUE (id)
+    UNIQUE (id),
+    UNIQUE (code, name)
   );
 
 CREATE TABLE
@@ -69,9 +70,9 @@ CREATE TABLE
     coverage JSONB,
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
-    UNIQUE (year_num),
     FOREIGN KEY (league_id) REFERENCES league (id),
-    FOREIGN KEY (year_num) REFERENCES year_num (year_num)
+    FOREIGN KEY (year_num) REFERENCES year_num (year_num),
+    UNIQUE (year_num, league_id)
   );
 
 CREATE TABLE
@@ -124,7 +125,7 @@ CREATE TABLE
     id serial PRIMARY KEY,
     team_id INT,
     year_num INT,
-    type VARCHAR(255),
+    home_away VARCHAR(255),
     played INT,
     wins INT,
     draws INT,
@@ -132,44 +133,37 @@ CREATE TABLE
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     FOREIGN KEY (team_id) REFERENCES team (id),
-    UNIQUE (team_id, year_num, type)
+    UNIQUE (team_id, year_num, home_away)
   );
 
 CREATE TABLE
-  IF NOT EXISTS team_goal (
+  IF NOT EXISTS team_record (
     id serial PRIMARY KEY,
     team_id INT,
     year_num INT,
-    type VARCHAR(255),
-    goal_type VARCHAR(255),
-    total INT,
-    average DECIMAL(5, 2),
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    FOREIGN KEY (team_id) REFERENCES team (id),
-    UNIQUE (team_id, year_num, type, goal_type)
-  );
-
-CREATE TABLE
-  IF NOT EXISTS team_goal_minute (
-    id INT PRIMARY KEY,
-    goal_id INT,
-    minute VARCHAR(255),
-    total INT,
-    percentage VARCHAR(255),
-    FOREIGN KEY (goal_id) REFERENCES team_goal (id)
-  );
-
-CREATE TABLE
-  IF NOT EXISTS team_penalty (
-    id serial PRIMARY KEY,
-    team_id INT,
-    year_num INT,
-    scored_total INT,
-    scored_percentage DECIMAL(5, 2),
-    missed_total INT,
-    missed_percentage DECIMAL(5, 2),
-    total INT,
+    form VARCHAR(255),
+    streak_wins INT,
+    streak_draws INT,
+    streak_loses INT,
+    wins_home VARCHAR(255),
+    wins_away VARCHAR(255),
+    loses_home VARCHAR(255),
+    loses_away VARCHAR(255),
+    biggest_for_home INT,
+    biggest_for_away INT,
+    biggest_against_home INT,
+    biggest_against_away INT,
+    clean_sheet_home INT,
+    clean_sheet_away INT,
+    clean_sheet_total INT,
+    failed_to_score_home INT,
+    failed_to_score_away INT,
+    failed_to_score_total INT,
+    penalty_total INT,
+    penalty_scored_total INT,
+    penalty_scored_percentage DECIMAL(5, 2),
+    penalty_missed_total INT,
+    penalty_missed_percentage DECIMAL(5, 2),
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     FOREIGN KEY (team_id) REFERENCES team (id),
@@ -177,7 +171,37 @@ CREATE TABLE
   );
 
 CREATE TABLE
-  IF NOT EXISTS team_lineup (
+  IF NOT EXISTS team_goal (
+    id serial PRIMARY KEY,
+    team_id INT,
+    year_num INT,
+    for_against VARCHAR(255),
+    home_away VARCHAR(255),
+    total INT,
+    average DECIMAL(5, 2),
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    FOREIGN KEY (team_id) REFERENCES team (id),
+    UNIQUE (team_id, year_num, for_against, home_away)
+  );
+
+CREATE TABLE
+  IF NOT EXISTS team_goal_minute (
+    id serial PRIMARY KEY,
+    team_id INT,
+    year_num INT,
+    for_against VARCHAR(255),
+    minute VARCHAR(255),
+    total INT,
+    percentage DECIMAL(5, 2),
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    FOREIGN KEY (team_id) REFERENCES team (id),
+    UNIQUE (team_id, year_num, for_against, minute)
+  );
+
+CREATE TABLE
+  IF NOT EXISTS team_formation (
     id serial PRIMARY KEY,
     team_id INT,
     year_num INT,
@@ -186,7 +210,7 @@ CREATE TABLE
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     FOREIGN KEY (team_id) REFERENCES team (id),
-    UNIQUE (team_id, year_num)
+    UNIQUE (team_id, year_num, formation)
   );
 
 CREATE TABLE
@@ -194,6 +218,7 @@ CREATE TABLE
     id serial PRIMARY KEY,
     team_id INT,
     year_num INT,
+    minute VARCHAR(255),
     yellow_total INT,
     yellow_percentage DECIMAL(5, 2),
     red_total INT,
@@ -201,5 +226,5 @@ CREATE TABLE
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     FOREIGN KEY (team_id) REFERENCES team (id),
-    UNIQUE (team_id, year_num)
+    UNIQUE (team_id, year_num, minute)
   );

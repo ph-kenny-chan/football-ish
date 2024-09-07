@@ -14,7 +14,7 @@ export type LeagueSchema = {
   updated_at: Date;
 };
 
-export const insertLeagues = async (leagues: League[]): Promise<any> => {
+export const upsertLeagues = async (leagues: League[]): Promise<any> => {
   const leaguesToInsert = leagues.map(
     league =>
       ({
@@ -27,32 +27,25 @@ export const insertLeagues = async (leagues: League[]): Promise<any> => {
         updated_at: new Date()
       }) as LeagueSchema
   );
-  logger.info(`leaguesToInsert: ${leaguesToInsert.length}`);
-  try {
-    const result = await (await Database.getClient()).insert<Array<League>>(leaguesToInsert).into('league').returning('*');
-    return result[0];
-  } catch (error) {
-    logger.error(error);
-  }
-};
 
-export const updateLeague = async (league: League): Promise<any> => {
   try {
-    const result = await (
+    return await (
       await Database.getClient()
     )
-      .update({
-        name: league.name,
-        type: league.type,
-        logo: league.logo,
-        updated_at: new Date()
+      .table('league')
+      .insert(leaguesToInsert)
+      .onConflict(['api_id'])
+      .merge((record: LeagueSchema, idx: number) => {
+        (record.country_id = leaguesToInsert[idx].country_id),
+          (record.name = leaguesToInsert[idx].name),
+          (record.type = leaguesToInsert[idx].type),
+          (record.logo = leaguesToInsert[idx].logo),
+          (record.updated_at = new Date());
       })
-      .from('league')
-      .where('api_id', league.apiId)
       .returning('*');
-    return result[0];
   } catch (error) {
-    logger.error(error);
+    logger.error('Error upserting league:', error);
+    throw error;
   }
 };
 
@@ -76,14 +69,14 @@ export const findAllLeagues = async (): Promise<League[]> => {
   }
 };
 
-export const findLeaguesByCountryId = async (countryId: number, limit: number | null = null): Promise<League[]> => {
+export const findLeaguesByCountryIds = async (countryIds: number[], limit: number | null = null): Promise<League[]> => {
   try {
     const result = await (
       await Database.getClient()
     )
       .select<Array<LeagueSchema>>('*')
       .from('league')
-      .where('country_id', countryId)
+      .whereIn('country_id', countryIds)
       .where('type', 'League')
       .limit(limit ?? 100000);
     return result.map(
@@ -102,3 +95,45 @@ export const findLeaguesByCountryId = async (countryId: number, limit: number | 
     return [];
   }
 };
+
+// export const insertLeagues = async (leagues: League[]): Promise<any> => {
+//   const leaguesToInsert = leagues.map(
+//     league =>
+//       ({
+//         api_id: league.apiId,
+//         country_id: league.countryId,
+//         name: league.name,
+//         type: league.type,
+//         logo: league.logo,
+//         created_at: new Date(),
+//         updated_at: new Date()
+//       }) as LeagueSchema
+//   );
+//   logger.info(`leaguesToInsert: ${leaguesToInsert.length}`);
+//   try {
+//     const result = await (await Database.getClient()).insert<Array<League>>(leaguesToInsert).into('league').returning('*');
+//     return result;
+//   } catch (error) {
+//     logger.error(error);
+//   }
+// };
+
+// export const updateLeague = async (league: League): Promise<any> => {
+//   try {
+//     const result = await (
+//       await Database.getClient()
+//     )
+//       .update({
+//         name: league.name,
+//         type: league.type,
+//         logo: league.logo,
+//         updated_at: new Date()
+//       })
+//       .from('league')
+//       .where('api_id', league.apiId)
+//       .returning('*');
+//     return result[0];
+//   } catch (error) {
+//     logger.error(error);
+//   }
+// };

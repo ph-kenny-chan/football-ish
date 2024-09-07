@@ -3,6 +3,6 @@ import { syncCountries } from '../../controllers/countryController';
 
 const router = express.Router();
 
-router.post('/sync', syncCountries);
+router.post('/sync/all', syncCountries);
 
 export { router as countryRoutes };

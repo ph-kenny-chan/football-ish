@@ -5,7 +5,6 @@ import { logger } from '../middlewares/loggerConfig';
 
 export type CountrySchema = {
   id?: number;
-  api_id: number;
   code: string;
   name: string;
   flag: string;
@@ -27,7 +26,7 @@ export const insertCountries = async (countries: Country[]): Promise<any> => {
 
   try {
     const result = await (await Database.getClient()).insert<Array<Country>>(countriesToInsert).into('country').returning('*');
-    return result[0];
+    return result;
   } catch (error) {
     logger.error(error);
   }
@@ -48,6 +47,35 @@ export const findCountries = async (): Promise<Country[]> => {
   } catch (error) {
     logger.error(error);
     return [];
+  }
+};
+
+export const upsertCountries = async (countries: Country[]): Promise<any> => {
+  const countriesToInsert = countries.map(country => ({
+    code: country.code,
+    name: country.name,
+    flag: country.flag,
+    created_at: new Date(),
+    updated_at: new Date()
+  } as CountrySchema
+  ));
+
+  try {
+    const result = await (
+      await Database.getClient()
+    )
+      .table('country')
+      .insert(countriesToInsert)
+      .onConflict(['code', 'name'])
+      .merge((record: CountrySchema, idx: number) => {
+        record.name = countriesToInsert[idx].name,
+        record.flag = countriesToInsert[idx].flag,
+        record.updated_at = new Date()
+      })
+      .returning('*');
+    return result;
+  } catch (error) {
+    logger.error(error);
   }
 };
 

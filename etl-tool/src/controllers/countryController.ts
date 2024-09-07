@@ -3,5 +3,5 @@ import { fetchCountries } from '../services/countryService';
 
 export const syncCountries = async (req: Request, res: Response) => {
   const result = await fetchCountries();
-  res.status(result.code).send({ result: result.message });
+  return res.status(result.code).send({ result: result.message });
 };

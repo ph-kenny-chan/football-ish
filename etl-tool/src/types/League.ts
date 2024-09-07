@@ -1,6 +1,6 @@
 export type League = {
   id?: number;
-  apiId?: number;
+  apiId: number;
   countryId: number;
   name: string;
   type: string;

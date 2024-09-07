@@ -4,42 +4,40 @@ import { findTeamVenueByTeamIdAndVenueId, upsertTeamVenues } from '../models/tea
 import { Team, TeamVenue, Venue } from '../types/TeamVenue';
 import { ApiResponse } from '../types/apiObj/ApiResponse';
 import { ResTeamVenue } from '../types/apiObj/ResTeamVenue';
-import { findTeamByApiId, upsertTeams } from '../models/team';
-import { findVenueByApiId, upsertVenues } from '../models/venue';
+import { findTeamByApiId } from '../models/team';
+import { findVenueByApiId } from '../models/venue';
 
 export const venues: Venue[] = [];
 export const teams: Team[] = [];
 export const teamVenuesMap: { teamApiId: number | undefined; venueApiId: number | undefined; season: number }[] = [];
 
-export const fetchTeamVenues = async (leagueIds: number[], season: number) => {
+export const fetchTeamVenues = async (leagueIds: string, season: number) => {
   try {
-    const filtered = leagueIds.slice(0, 3);
-    for (const leagueId of filtered) {
-      const apiResTeamVenues: ApiResponse<ResTeamVenue> = await getTeamsByLeagueId({ season, leagueId });
+    if (!leagueIds) throw new Error('League ids are required');
+    for (const leagueId of leagueIds.split(',')) {
+      const apiResTeamVenues: ApiResponse<ResTeamVenue, ResTeamVenue[]> = await getTeamsByLeagueId({ season, leagueId: parseInt(leagueId) });
       const resTeamVenues = apiResTeamVenues.response;
       const teamVenues = convertTeamVenueFromAPI(resTeamVenues);
-      logger.info(`Syncing teamVenues from leagueId: ${leagueId} and season: ${season}`);
-      logger.info(`teamVenues: ${teamVenues.length}`);
       for (const teamVenue of teamVenues) {
         const { team, venue } = teamVenue;
         logger.info(`Syncing team: ${team.name}: apiId ${team.apiId} and venue: ${venue.name} apiId: ${venue.apiId}`);
-        if (team) {
+        if (team && teams.findIndex(t => t.apiId === team.apiId) === -1) {
           teams.push(team);
         }
 
-        if (venue) {
+        if (venue && venues.findIndex(v => v.apiId === venue.apiId) === -1) {
           venues.push(venue);
         }
 
-        if (team && venue) {
+        if (team && venue && teamVenuesMap.findIndex(tvm => tvm.teamApiId === team.apiId && tvm.venueApiId === venue.apiId) === -1) {
           teamVenuesMap.push({ teamApiId: team.apiId, venueApiId: venue.apiId, season: season });
         }
       }
     }
-    return { code: 200, message: 'ok' };
+    return { teams, venues, teamVenuesMap };
   } catch (error) {
     logger.error(error);
-    return { code: 400, message: 'error' };
+    throw error;
   }
 };
 
@@ -50,10 +48,7 @@ export const addNewTeamVenuesToDB = async () => {
     const team = await findTeamByApiId(teamVenue.teamApiId ?? 0);
     const venue = await findVenueByApiId(teamVenue.venueApiId ?? 0);
     if (team && venue) {
-      const teamVenueFromDB = await findTeamVenueByTeamIdAndVenueId(team.id ?? 0, venue.id ?? 0);
-      if (!teamVenueFromDB) {
-        teamVenuesToInsert.push({ team, venue, season: teamVenue.season });
-      }
+      teamVenuesToInsert.push({ team, venue, season: teamVenue.season });
     }
   }
   return await upsertTeamVenues(teamVenuesToInsert);

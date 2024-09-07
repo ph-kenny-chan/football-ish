@@ -1,122 +1,73 @@
 import { League } from '../League';
+import { HomeAway, MinuteRange } from '../TeamStatistic';
 import { Team } from '../TeamVenue';
 
 export type ResTeamStatistics = {
   league: League;
   team: Team;
   form: string;
-  fixtures: Fixtures;
-  goals: Goals;
-  biggest: Biggest;
-  clean_sheet: {
-    home: number;
-    away: number;
-    total: number;
-  };
-  failed_to_score: {
-    home: number;
-    away: number;
-    total: number;
-  };
-  penalty: {
-    scored: {
-      total: number;
-      percentage: string;
-    };
-    missed: {
-      total: number;
-      percentage: string;
-    };
-    total: number;
-  };
-  lineups: Lineup[];
-  cards: Cards;
+  fixtures: ResFixtures;
+  goals: ResGoals;
+  biggest: ResBiggest;
+  clean_sheet: Record<HomeAway, number>;
+  failed_to_score: Record<HomeAway, number>;
+  penalty: ResPenalties;
+  lineups: ResLineup[];
+  cards: ResCards;
 };
 
-type Fixtures = {
-  played: {
-    home: number;
-    away: number;
-    total: number;
-  };
-  wins: {
-    home: number;
-    away: number;
-    total: number;
-  };
-  draws: {
-    home: number;
-    away: number;
-    total: number;
-  };
-  loses: {
-    home: number;
-    away: number;
-    total: number;
-  };
+export type ResFixtures = {
+  played: Record<HomeAway, number>;
+  wins: Record<HomeAway, number>;
+  draws: Record<HomeAway, number>;
+  loses: Record<HomeAway, number>;
 };
 
-type Goals = {
+export type ResGoals = {
   for: {
-    total: {
-      home: number;
-      away: number;
-      total: number;
-    };
-    average: {
-      home: string;
-      away: string;
-      total: string;
-    };
-    minute: Record<string, { total: number | null; percentage: string | null }>;
+    total: Record<HomeAway, number>;
+    average: Record<HomeAway, string>;
+    minute: Record<MinuteRange, { total: number | null; percentage: string | null }>;
   };
   against: {
-    total: {
-      home: number;
-      away: number;
-      total: number;
-    };
-    average: {
-      home: string;
-      away: string;
-      total: string;
-    };
-    minute: Record<string, { total: number | null; percentage: string | null }>;
+    total: Record<HomeAway, number>;
+    average: Record<HomeAway, string>;
+    minute: Record<MinuteRange, { total: number | null; percentage: string | null }>;
   };
 };
 
-type Biggest = {
+export type ResBiggest = {
   streak: {
     wins: number;
     draws: number;
     loses: number;
   };
-  wins: {
-    home: string;
-    away: string;
-  };
-  loses: {
-    home: string;
-    away: string;
-  };
+  wins: Record<HomeAway, number>;
+  loses: Record<HomeAway, number>;
   goals: {
-    for: {
-      home: number;
-      away: number;
-    };
-    against: {
-      home: number;
-      away: number;
-    };
+    for: Record<HomeAway, number>;
+    against: Record<HomeAway, number>;
   };
 };
 
-type Lineup = {
+export type ResLineup = {
   formation: string;
   played: number;
 };
 
-type Cards = {
-  yellow: Record<string, { total: number | null; percentage: string | null }>;
-  red: Record<string, { total: number | null; percentage: string | null }>;
+export type ResCards = {
+  yellow: Record<MinuteRange, { total: number | null; percentage: string | null }>;
+  red: Record<MinuteRange, { total: number | null; percentage: string | null }>;
+};
+
+export type ResPenalties = {
+  scored: {
+    total: number;
+    percentage: string;
+  };
+  missed: {
+    total: number;
+    percentage: string;
+  };
+  total: number;
 };

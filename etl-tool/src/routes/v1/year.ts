@@ -3,7 +3,7 @@ import { fetchYearNumbers } from '../../services/yearNumberService';
 
 const router = express.Router();
 
-router.post('/sync', async (req: Request, res: Response) => {
+router.post('/sync/all', async (req: Request, res: Response) => {
   const result = await fetchYearNumbers();
   res.status(result.code).send({ result: result.message });
 });

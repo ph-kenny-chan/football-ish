@@ -27,7 +27,7 @@ async function fetchData(method: string, path: string): Promise<any> {
   }
 }
 
-export async function getCountries(): Promise<ApiResponse<Country>> {
+export async function getCountries(): Promise<ApiResponse<Country, Country[]>> {
   try {
     const countries = await fetchData('GET', '/countries');
     return countries;
@@ -37,12 +37,11 @@ export async function getCountries(): Promise<ApiResponse<Country>> {
   }
 }
 
-export const getLeagues = async (countryCode?: string): Promise<ApiResponse<ResLeague>> => {
+export const getLeagues = async (countryCode?: string): Promise<ApiResponse<ResLeague, ResLeague[]>> => {
   try {
     let params = '';
-    params += countryCode ? `code=${countryCode}` : '';
-
-    const resLeague = await fetchData('GET', `/leagues?${params}`);
+    params += countryCode ? `?code=${countryCode}` : '';
+    const resLeague = await fetchData('GET', `/leagues${params}`);
     return resLeague;
   } catch (error) {
     logger.error('Error getting leagues:', error);
@@ -50,7 +49,7 @@ export const getLeagues = async (countryCode?: string): Promise<ApiResponse<ResL
   }
 };
 
-export const getYearNumbers = async (): Promise<ApiResponse<number>> => {
+export const getYearNumbers = async (): Promise<ApiResponse<number, number[]>> => {
   try {
     const yearNumbers = await fetchData('GET', `/leagues/seasons`);
     return yearNumbers;
@@ -67,7 +66,7 @@ type GetTeamsProp = {
   leagueId?: number;
 };
 
-export const getTeamsByLeagueId = async ({ season, id, name, leagueId }: GetTeamsProp): Promise<ApiResponse<ResTeamVenue>> => {
+export const getTeamsByLeagueId = async ({ season, id, name, leagueId }: GetTeamsProp): Promise<ApiResponse<ResTeamVenue, ResTeamVenue[]>> => {
   try {
     let params = '';
     id && (params += `&id=${id}`);
@@ -93,9 +92,9 @@ export const getTeamStatisticsBySeason = async ({
   leagueId,
   teamId,
   season
-}: GetTeamStatisticsProp): Promise<ApiResponse<ResTeamStatistics>> => {
+}: GetTeamStatisticsProp): Promise<ApiResponse<ResTeamStatistics, ResTeamStatistics>> => {
   try {
-    let params = `league=${leagueId}&team=${teamId}&season=${season}`;
+    let params = `?league=${leagueId}&team=${teamId}&season=${season}`;
     const teamStatistics = await fetchData('GET', `/teams/statistics${params}`);
     return teamStatistics;
   } catch (error) {

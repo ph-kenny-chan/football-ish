@@ -1,11 +1,11 @@
-export type ApiResponse<T> = {
+export type ApiResponse<T, R> = {
   errors?: string[];
   get: string;
   level: string;
   message: string;
   paging: Page;
   parameters: Record<string, string>;
-  response: Array<T>;
+  response: R;
   results: number;
   timestamp: number;
 };

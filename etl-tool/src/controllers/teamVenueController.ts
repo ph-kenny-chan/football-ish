@@ -1,31 +1,31 @@
 import { Request, Response } from 'express';
 import { logger } from '../middlewares/loggerConfig';
-import { findLeaguesByCountryId } from '../models/league';
 import { fetchTeamVenues, addNewTeamVenuesToDB, teams } from '../services/teamVenueService';
 import { updateTeamsInDB } from '../services/teamService';
 import { upsertVenuesInDB } from '../services/venueService';
-import { allCountries } from '../services/countryService';
 
-export const syncTeamVenueByCountryCodes = async (req: Request, res: Response) => {
-  const countryCodes: string = req.body.countryCodes;
-  const season: number = req.body.season;
-  if (!countryCodes || !season) {
+export const fetchTeamVenueByLeagueIds = async (req: Request, res: Response) => {
+  const reqLeagueIds: string = req.params.leagueIds;
+  const leagueIds = reqLeagueIds.split(',').map(Number);
+  const reqSeason: number = +req.params.season;
+  if (!reqLeagueIds || !reqSeason) {
     return res.status(400).json({ code: 400, message: 'Bad Request' });
   }
 
-  const countryIds = countryCodes.split(',').map(countryCode => allCountries.find(country => country.code === countryCode)?.id);
-  logger.info(`countryIds: ${countryIds}`);
-  for (const countryId of countryIds) {
-    const leagues = await findLeaguesByCountryId(countryId ?? 0, 3);
-    const leagueIds: number[] = leagues.map(league => league.apiId ?? 0);
-    logger.info(`${leagueIds.length} leagues found for countryId: ${countryId}`);
-    if (leagueIds) {
-      const result = await fetchTeamVenues(leagueIds, season);
-      return res.status(result.code).send({ result: result.message });
-    } else {
-      return res.status(400).json({ code: 400, message: 'Bad Request' });
-    }
+  const batchSize = 5;
+  const totalBatches = Math.ceil(leagueIds.length / batchSize);
+  let result: any[] = [];
+
+  for (let i = 0; i < totalBatches; i++) {
+    const start = i * batchSize;
+    const end = start + batchSize;
+    const batch = leagueIds.slice(start, end);
+
+    const batchResult = await fetchTeamVenues(batch.join(','), reqSeason);
+    result[i] = batchResult;
   }
+
+  return res.status(200).json({ code: 200, message: result });
 };
 
 export const syncAllTeamVenues = async (req: Request, res: Response) => {

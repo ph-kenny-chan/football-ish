@@ -33,9 +33,7 @@ export const upsertTeamVenues = async (teamVenues: TeamVenue[]): Promise<any> =>
       .table('team_venue')
       .insert(teamVenuesToInsert)
       .onConflict(['team_id', 'venue_id', 'year_num'])
-      .merge((record: TeamVenueSchema, idx: number) => {
-        record.updated_at = new Date();
-      })
+      .ignore()
       .returning('*');
 
     logger.info(`Upserted ${result.length} teamVenues`);

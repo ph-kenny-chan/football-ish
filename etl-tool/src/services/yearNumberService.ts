@@ -8,7 +8,7 @@ export let currentYearNum: number;
 
 export const fetchYearNumbers = async () => {
   try {
-    const apiResSeasons: ApiResponse<number> = await getYearNumbers();
+    const apiResSeasons: ApiResponse<number, number[]> = await getYearNumbers();
     const yearnumbers = apiResSeasons.response;
     await insertYearNumbers(yearnumbers);
     return { code: 200, message: 'ok' };

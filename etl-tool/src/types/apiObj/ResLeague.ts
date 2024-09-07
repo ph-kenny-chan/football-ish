@@ -4,6 +4,6 @@ import { Season } from '../Season';
 
 export type ResLeague = {
   league: League;
-  country: Country;
+  country?: Country;
   seasons: Season[];
 };
