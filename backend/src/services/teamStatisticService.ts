@@ -1,3 +1,4 @@
+import { find } from 'lodash';
 import { getTeamStatisticsBySeason } from '../api-football-client';
 import { logger } from '../middlewares/loggerConfig';
 import { upsertTeamCard } from '../models/teamCard';
@@ -9,6 +10,8 @@ import { upsertTeamRecord } from '../models/teamRecord';
 import { ResBiggest, ResCards, ResFixtures, ResGoals, ResLineup, ResPenalties, ResTeamStatistics } from '../types/apiObj/ResTeamStatistics';
 import { HomeAway, TeamCard, TeamFixture, MinuteRange, TeamGoal, ForAgainst, TeamGoalMinute, TeamFormation, TeamRecord } from '../types/TeamStatistic';
 import { percentageStringToNumber } from '../utils/Utils';
+import { findTeamByApiId } from '../models/team';
+import { findLeagueByApiId } from '../models/league';
 
 const homeAwayValues: HomeAway[] = ['home', 'away', 'total'];
 const forAgainstValues: ForAgainst[] = ['for', 'against'];
@@ -31,21 +34,24 @@ export const fetchTeamStatistics = async (leagueId: number, teamId: number, seas
       failed_to_score: failedToScore,
       penalty
     } = statistic;
-    const statLeagueId = league.id;
-    const statTeamId = team.id;
+    const leagueApiId = league.id;
+    const teamApiId = team.id;
     logger.info(`Syncing team statistics for team: ${team.name} and league: ${league.name}`);
     
-    if (!statTeamId || !statLeagueId) throw new Error('Team ID or League ID is null');
+    if (!leagueApiId || !teamApiId) throw new Error('Team ID or League ID is null');
+    const dbLeague = await findLeagueByApiId(leagueApiId);
+    const dbTeam = await findTeamByApiId(teamApiId);
+    if (!dbLeague || !dbTeam || !dbLeague.id || !dbTeam.id) throw new Error('Team or League not found');
     // Team Cards
-    await convertCardsResponseToTeamCards(cards, statTeamId, statLeagueId, season);
+    await convertCardsResponseToTeamCards(cards, dbTeam.id, dbLeague.id, season);
     // Team Fixtures
-    await convertFixturesResponseToTeamFixtures(fixtures, statTeamId, statLeagueId, season);
+    await convertFixturesResponseToTeamFixtures(fixtures, dbTeam.id, dbLeague.id, season);
     // Team goals
-    await convertGoalsResponseToTeamGoals(goals, statTeamId, statLeagueId, season);
+    await convertGoalsResponseToTeamGoals(goals, dbTeam.id, dbLeague.id, season);
     // Team Formations
-    await convertFormationsResponseToTeamFormations(lineups, statTeamId, statLeagueId, season);
+    await convertFormationsResponseToTeamFormations(lineups, dbTeam.id, dbLeague.id, season);
     // Team Record
-    await convertResponseToTeamRecords(form, biggest, cleanSheet, failedToScore, penalty, statTeamId, statLeagueId, season);
+    await convertResponseToTeamRecords(form, biggest, cleanSheet, failedToScore, penalty, dbTeam.id, dbLeague.id, season);
   } catch (error) {
     throw new Error('Failed to fetch team statistics');
   }

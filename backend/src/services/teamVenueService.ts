@@ -1,6 +1,6 @@
 import { getTeamsByLeagueId } from '../api-football-client';
 import { logger } from '../middlewares/loggerConfig';
-import { findTeamVenueByTeamIdAndVenueId, upsertTeamVenues } from '../models/teamVenue';
+import { upsertTeamVenues } from '../models/teamVenue';
 import { Team, TeamVenue, Venue } from '../types/TeamVenue';
 import { ApiResponse } from '../types/apiObj/ApiResponse';
 import { ResTeamVenue } from '../types/apiObj/ResTeamVenue';

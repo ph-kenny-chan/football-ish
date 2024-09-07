@@ -69,6 +69,31 @@ export const findAllLeagues = async (): Promise<League[]> => {
   }
 };
 
+export const findLeagueByApiId = async (apiId: number): Promise<League> => {
+  try {
+    const result: LeagueSchema | undefined = await (await Database.getClient())
+      .select<LeagueSchema>(['*'])
+      .from('league')
+      .where('api_id', apiId)
+      .first();
+    if (result?.api_id === undefined) {
+      logger.info(`league api id ${apiId} is not existed`);
+      return undefined as unknown as League;
+    }
+    return {
+      id: result.id,
+      apiId: result.api_id,
+      countryId: result.country_id,
+      name: result.name,
+      type: result.type,
+      logo: result.logo
+    };
+  } catch (error) {
+    logger.error(error);
+    return {} as League;
+  }
+}
+
 export const findLeaguesByCountryIds = async (countryIds: number[], limit: number | null = null): Promise<League[]> => {
   try {
     const result = await (
