@@ -62,7 +62,8 @@ CREATE TABLE
 
 CREATE TABLE
   IF NOT EXISTS season (
-    year_num INT PRIMARY KEY,
+    id TEXT PRIMARY KEY,
+    year_num INT,
     league_id INT,
     start_date DATE,
     end_date DATE,

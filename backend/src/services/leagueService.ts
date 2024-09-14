@@ -5,6 +5,9 @@ import { ApiResponse } from '../types/apiObj/ApiResponse';
 import { League } from '../types/League';
 import { ResLeague } from '../types/apiObj/ResLeague';
 import { allCountries } from './countryService';
+import { Season } from '../types/Season';
+import { upsertSeasons } from '../models/season';
+import { insertSeasonsByLeagueId, upsertSeasonsInDB } from './seasonService';
 
 export const fetchAllLeagues = async () => {
   return fetchLeagueInner();
@@ -17,8 +20,8 @@ export const fetchLeaguesByCountryCodes = async (countryCodes?: string) => {
 const fetchLeagueInner = async (countryCodes?: string) => {
   try {
     const apiResLeagues: ApiResponse<ResLeague, ResLeague[]> = await getLeagues(countryCodes);
-    const resLeagues = apiResLeagues.response;
-    const leagues: League[] = resLeagues.map(
+    const response = apiResLeagues.response;
+    const leagues: League[] = response.map(
       resLeague =>
         ({
           apiId: resLeague.league.id,
@@ -32,8 +35,34 @@ const fetchLeagueInner = async (countryCodes?: string) => {
           logo: resLeague.league.logo
         }) as League
     );
-    const result = await upsertLeagues(leagues);
-    return { code: 200, message: result ? result : 'No league inserted' };
+    const leagueResult = await upsertLeagues(leagues);
+    // insert seasons data
+    const leagueSeasons = leagueResult.flatMap(dbLeague => {
+      const seasons = response
+        .filter(() => dbLeague.id !== undefined)
+        .filter(resLeague => resLeague.league.id === dbLeague.id)
+        .flatMap(resLeague => {
+          return resLeague.seasons.map(season => {
+            return {
+              year: season.year,
+              leagueId: dbLeague.id,
+              start: season.start,
+              end: season.end,
+              current: season.current,
+              coverage: season.coverage
+            } as Season;
+          });
+        })
+      return {
+        leagueId: dbLeague.id ?? 0,
+        seasons
+      };
+    });
+    const result = leagueSeasons
+      .filter(leagueSeason => leagueSeason.leagueId !== undefined)
+      .map(async leagueSeason =>
+        await insertSeasonsByLeagueId(leagueSeason.leagueId, leagueSeason.seasons));
+    return { code: 200, message: result ? leagueSeasons : 'No league and seasons inserted' };
   } catch (error) {
     logger.error(error);
     return { code: 400, message: 'error' };

@@ -1,5 +1,6 @@
 export type Season = {
-  year_num: number;
+  year: number;
+  leagueId: number;
   start: string;
   end: string;
   current: boolean;

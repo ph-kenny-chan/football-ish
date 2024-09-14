@@ -14,7 +14,7 @@ export type LeagueSchema = {
   updated_at: Date;
 };
 
-export const upsertLeagues = async (leagues: League[]): Promise<any> => {
+export const upsertLeagues = async (leagues: League[]): Promise<League[]> => {
   const leaguesToInsert = leagues.map(
     league =>
       ({
@@ -29,7 +29,7 @@ export const upsertLeagues = async (leagues: League[]): Promise<any> => {
   );
 
   try {
-    return await (
+    const result = await (
       await Database.getClient()
     )
       .table('league')
@@ -42,7 +42,17 @@ export const upsertLeagues = async (leagues: League[]): Promise<any> => {
           (record.logo = leaguesToInsert[idx].logo),
           (record.updated_at = new Date());
       })
-      .returning('*');
+      .returning<LeagueSchema[]>('*');
+    return result.map(leagueSchema => 
+      ({
+        id: leagueSchema.id,
+        apiId: leagueSchema.api_id,
+        countryId: leagueSchema.country_id,
+        name: leagueSchema.name,
+        type: leagueSchema.type,
+        logo: leagueSchema.logo
+      }) as League
+    );
   } catch (error) {
     logger.error('Error upserting league:', error);
     throw error;
