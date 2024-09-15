@@ -2,13 +2,23 @@ import { find } from 'lodash';
 import { getTeamStatisticsBySeason } from '../api-football-client';
 import { logger } from '../middlewares/loggerConfig';
 import { upsertTeamCard } from '../models/teamCard';
-import { upsertTeamFixture } from '../models/teamFixture';
+import { upsertTeamMatchOverview } from '../models/teamMatchOverview';
 import { upsertTeamFormation } from '../models/teamFormation';
 import { upsertTeamGoal } from '../models/teamGoal';
 import { upsertTeamGoalMinute } from '../models/teamGoalMinute';
 import { upsertTeamRecord } from '../models/teamRecord';
 import { ResBiggest, ResCards, ResFixtures, ResGoals, ResLineup, ResPenalties, ResTeamStatistics } from '../types/apiObj/ResTeamStatistics';
-import { HomeAway, TeamCard, TeamFixture, MinuteRange, TeamGoal, ForAgainst, TeamGoalMinute, TeamFormation, TeamRecord } from '../types/TeamStatistic';
+import {
+  HomeAway,
+  TeamCard,
+  TeamMatchOverview,
+  MinuteRange,
+  TeamGoal,
+  ForAgainst,
+  TeamGoalMinute,
+  TeamFormation,
+  TeamRecord
+} from '../types/TeamStatistic';
 import { percentageStringToNumber } from '../utils/Utils';
 import { findTeamByApiId } from '../models/team';
 import { findLeagueByApiId } from '../models/league';
@@ -37,7 +47,7 @@ export const fetchTeamStatistics = async (leagueId: number, teamId: number, seas
     const leagueApiId = league.id;
     const teamApiId = team.id;
     logger.info(`Syncing team statistics for team: ${team.name} and league: ${league.name}`);
-    
+
     if (!leagueApiId || !teamApiId) throw new Error('Team ID or League ID is null');
     const dbLeague = await findLeagueByApiId(leagueApiId);
     const dbTeam = await findTeamByApiId(teamApiId);
@@ -45,7 +55,7 @@ export const fetchTeamStatistics = async (leagueId: number, teamId: number, seas
     // Team Cards
     await convertCardsResponseToTeamCards(cards, dbTeam.id, dbLeague.id, season);
     // Team Fixtures
-    await convertFixturesResponseToTeamFixtures(fixtures, dbTeam.id, dbLeague.id, season);
+    await convertFixturesResponseToTeamMatchOverviews(fixtures, dbTeam.id, dbLeague.id, season);
     // Team goals
     await convertGoalsResponseToTeamGoals(goals, dbTeam.id, dbLeague.id, season);
     // Team Formations
@@ -77,8 +87,8 @@ const convertCardsResponseToTeamCards = (cards: ResCards, statTeamId: number, st
   }
 };
 
-const convertFixturesResponseToTeamFixtures = (fixtures: ResFixtures, statTeamId: number, statLeagueId: number, season: number) => {
-  const homeTeamFixture: TeamFixture = {
+const convertFixturesResponseToTeamMatchOverviews = (fixtures: ResFixtures, statTeamId: number, statLeagueId: number, season: number) => {
+  const homeTeamMatchOverview: TeamMatchOverview = {
     teamId: statTeamId,
     leagueId: statLeagueId,
     yearNum: season,
@@ -89,7 +99,7 @@ const convertFixturesResponseToTeamFixtures = (fixtures: ResFixtures, statTeamId
     loses: fixtures.loses.home
   };
 
-  const awayTeamFixture: TeamFixture = {
+  const awayTeamMatchOverview: TeamMatchOverview = {
     teamId: statTeamId,
     leagueId: statLeagueId,
     yearNum: season,
@@ -100,7 +110,7 @@ const convertFixturesResponseToTeamFixtures = (fixtures: ResFixtures, statTeamId
     loses: fixtures.loses.away
   };
 
-  const totalTeamFixture: TeamFixture = {
+  const totalTeamMatchOverview: TeamMatchOverview = {
     teamId: statTeamId,
     leagueId: statLeagueId,
     yearNum: season,
@@ -111,7 +121,11 @@ const convertFixturesResponseToTeamFixtures = (fixtures: ResFixtures, statTeamId
     loses: fixtures.loses.total
   };
 
-  return Promise.all([upsertTeamFixture(homeTeamFixture), upsertTeamFixture(awayTeamFixture), upsertTeamFixture(totalTeamFixture)]);
+  return Promise.all([
+    upsertTeamMatchOverview(homeTeamMatchOverview),
+    upsertTeamMatchOverview(awayTeamMatchOverview),
+    upsertTeamMatchOverview(totalTeamMatchOverview)
+  ]);
 };
 
 const convertGoalsResponseToTeamGoals = (goals: ResGoals, statTeamId: number, statLeagueId: number, season: number) => {

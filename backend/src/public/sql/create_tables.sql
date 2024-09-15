@@ -8,7 +8,7 @@ DROP TABLE IF EXISTS team_goal_minute;
 
 DROP TABLE IF EXISTS team_goal;
 
-DROP TABLE IF EXISTS team_fixture;
+DROP TABLE IF EXISTS team_match_overview;
 
 DROP TABLE IF EXISTS team_venue;
 
@@ -122,7 +122,7 @@ CREATE TABLE
   );
 
 CREATE TABLE
-  IF NOT EXISTS team_fixture (
+  IF NOT EXISTS team_match_overview (
     id serial PRIMARY KEY,
     team_id INT,
     league_id INT,

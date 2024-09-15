@@ -10,7 +10,7 @@ export type TeamCard = {
   redPercentage: number | null;
 };
 
-export type TeamFixture = {
+export type TeamMatchOverview = {
   id?: number;
   teamId: number;
   leagueId: number;
